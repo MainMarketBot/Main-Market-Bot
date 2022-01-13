@@ -1,4 +1,4 @@
-import discord # testt
+import discord
 from discord.ext import commands
 import time
 import os
@@ -6,18 +6,60 @@ import random
 from discord import *
 import requests
 import json
-client = commands.Bot(command_prefix="?") # bot prefix
-client.remove_command("help") # removes orginal help embed
-E = discord.Embed # Im hella lazy so I asigned discord.Embed as E so I don't gotta type more
-light_blue = 0x03b6fc # Hex Color Value for Blue
-red = 0xfc030b # Hex color Value for Red
-green = 0x02e64a # Hex color Value for Red
+client = commands.Bot(command_prefix="?")
+client.remove_command("help")
+E = discord.Embed
+light_blue = 0x03b6fc
+red = 0xfc030b
+green = 0x02e64a\
+
+
+def opendbb():
+  with open("inv.json") as f:
+    data = json.load(f)
+  return data
+def savedb(data):
+  with open("inv.json", "w+") as f:
+    json.dump(data, f)
+def createaccount(ID):
+
+  database = opendbb()
+  if ID in database:
+    return 
+  else:
+    database[ID] = {}
+    database[ID]["points"] = 0
+    savedb(database)
+  return
+
+  
 @client.event
 async def on_ready():
-  print(f"Logged in as {client.user}!") # on bot startup 
+  print(f"Logged in as {client.user}!")
 
 
-@client.command() # on ?bin command
+
+
+
+@client.command()
+async def bal(ctx):
+  ID = str(ctx.message.author.id)
+  createaccount(ID)
+  database = opendbb()
+  balance = database[ID]["points"]
+  msg = ""
+  if int(balance) < 5:
+    msg = "YOU BROKE"
+  else:
+    msg = "YOU RICH"
+  embed=E(title=f"{ctx.message.author}'s Balance", description=f"Your Point Balance: **{balance}**", color=light_blue)
+  embed.set_footer(text=msg)
+  await ctx.send(embed=embed)
+  return
+
+
+
+@client.command()
 async def bin(ctx, cc: str=None):
   if cc == None:
     embed=E(title=f"Command Usage Error", description=f"You did not provide the first 6 digits of a cc!", color=red)
@@ -52,7 +94,7 @@ async def bin(ctx, cc: str=None):
 
   
 
-@client.command() # new help command 
+@client.command()
 async def help(ctx):
   embed=E(title="Main Market Bot Commands", description="?help: displays this message\n\n?bin (first 4 digits of card): Returns BIN information about card\n\n", color=light_blue)
   embed.set_footer(text="Bandz = Daddy ;)")
@@ -61,5 +103,5 @@ async def help(ctx):
 
 
 
-token = "bot token" # DO NOT SHARE THIS sharing this can allow other people to have full access on your bot
-client.run(token) # runs the bot
+token = os.environ["bottoken"]
+client.run(token)
