@@ -39,7 +39,19 @@ async def on_ready():
 
 
 
-
+@client.command()
+async def create(ctx):
+  ID = str(ctx.message.author.id)
+  database = opendbb()
+  if ID not in database:
+    createaccount(ID)
+    embed=E(title=f"Created Account!", description=f"{ctx.message.author} Your account has been created!", color=green)
+    await ctx.send(embed=embed)
+    return
+  else:
+    embed=E(title=f"Creation Error", description=f"It looks like you already have an account!", color=red)
+    await ctx.send(embed=embed)
+    return
 
 @client.command()
 async def bal(ctx):
@@ -56,8 +68,55 @@ async def bal(ctx):
   embed.set_footer(text=msg)
   await ctx.send(embed=embed)
   return
-
-
+@client.command()
+async def tip(ctx, recviver: discord.Member=None, amount:int=None):
+  if recviver == None:
+    embed=E(title=f"Tip Command Error", description=f"You did not specify a user to tip!", color=red)
+    await ctx.send(embed=embed)
+    return
+  if recviver.id == ctx.message.author.id:
+    embed=E(title=f"Command Error", description=f"You cannot tip yourself!", color=red)
+    await ctx.send(embed=embed)
+    return
+  if amount == None:
+    embed=E(title=f"Command Error", description=f"You must specify an amount to tip!", color=red)
+    await ctx.send(embed=embed)
+    return
+  recvID = str(recviver.id)
+  ID = str(ctx.message.author.id)
+  database = opendbb()
+  if ID not in database:
+    embed=E(title=f"Command Error", description=f"You do not have a account run the **?create** command to create your account!", color=red)
+    await ctx.send(embed=embed)
+    return
+  if recvID not in database:
+    emebd=E(title=f"Error Tipping User", description=f"The user you tried tipping does not have an account!", color=red)
+    await ctx.send(embed=emebd)
+    return 
+  if amount <= 0:
+    embed=E(title=f"Tip Error!", description=f"Cannot Tip NULL or Negative amounts!", color=red)
+    await ctx.send(embed=embed)
+    return
+  users_points = database[ID]["points"]
+  users_points = int(users_points)
+  if int(users_points) < int(amount):
+    embed=E(title=f"Transaction Error", description=f"{ctx.message.author} It looks like you do not have enough points to make this transaction!", color=red)
+    await ctx.send(embed=embed)
+    return
+  else:
+    try:
+      database[ID]["points"] -= int(amount)
+      savedb(database)
+      database[recvID]["points"] += int(amount)
+      savedb(database)
+      
+    except:
+      await ctx.send('Something went wrong!')
+      return
+    embed=E(title=f"Transaction Proccesed!", description=f"You have sent {amount} to <@{recvID}>", color=green)
+    await ctx.send(embed=embed)
+    return
+  
 
 @client.command()
 async def bin(ctx, cc: str=None):
