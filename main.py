@@ -54,7 +54,24 @@ async def create(ctx):
     return
 
 @client.command()
-async def bal(ctx):
+async def bal(ctx, optional: discord.Member=None):
+  if optional == None:
+    pass
+  else:
+    ID = optional.id
+    IDD = str(optional.id)
+    createaccount(IDD)
+    database = opendbb()
+    balance = database[IDD]["points"]
+    msg = ""
+    if int(balance) < 5:
+      msg = "HE BROKE"
+    else:
+      msg = "HE RICH"
+    embed=E(title=f"{optional} Balance", description=f"<@{ID}>'s Balance: **{balance}**", color=light_blue)
+    embed.set_footer(text=msg)
+    await ctx.send(embed=embed)
+    return
   ID = str(ctx.message.author.id)
   createaccount(ID)
   database = opendbb()
@@ -68,6 +85,8 @@ async def bal(ctx):
   embed.set_footer(text=msg)
   await ctx.send(embed=embed)
   return
+
+
 @client.command()
 async def tip(ctx, recviver: discord.Member=None, amount:int=None):
   if recviver == None:
